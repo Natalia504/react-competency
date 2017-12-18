@@ -22,7 +22,7 @@ app.get('/api/allItems', controller.getItems);
 app.put('/api/editItem/:id', controller.editItem);
 app.post('/api/addItem', controller.addItem);
 app.delete('/api/deleteItem/:id', controller.deleteItem);
-
+app.get('/api/search', controller.searchItem)
 
 
 

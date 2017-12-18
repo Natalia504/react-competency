@@ -3,44 +3,114 @@ import axios from 'axios'
 import './../components/shop.css'
 
 export default class Shop extends Component {
-    constructor(props){
-        super(props)
+    constructor() {
+        super()
         this.state = {
             itemName: "",
-            itemPrice: null, 
-            itemCreated: false
+            itemPrice: null,
+            itemCreated: false,
+            allItems: [], 
+            deletedItem: [], 
+            itemEdited: false, 
+            found: []
         }
-        this.handleClick = this.handleClick.bind(this)
+
+        this.handleClick = this.handleClick.bind(this)  
+        this.deleteItem  = this.deleteItem.bind(this)  
+        this.showAllItems = this.showAllItems.bind(this)    
+        this.searchItems = this.searchItems.bind(this)    
+        
     }
 
-    handleChange1(e){
+    handleChange1(val) {
         this.setState({
-            itemName: e.target.value
+            itemName: val
+        })
+    }
+    handleChange2(val) {
+
+        this.setState({
+            itemPrice: val
         })
     }
 
-    handleChange2(e){
-        this.setState({
-            itemPrice: e.target.value
-        })
+    handleClick() {
+        axios.post('http://localhost:8080/api/addItem', { item_name: this.state.itemName, item_price: this.state.itemPrice })
+            .then(res => ({
+                itemCreated: true
+            })
+            )
     }
 
-    handleClick(){
-       axios.post('/api/addItem', {item_name: this.state.itemName, item_price: this.state.itemPrice})
+    showAllItems() {
+        axios.get('http://localhost:8080/api/allItems')
+            .then(res => {
+                this.setState({
+                    allItems: res.data
+                })
+            })
+    }
+
+    deleteItem(id){
+        axios.delete(`http://localhost:8080/api/deleteItem/${id}`)
+        .then(res => {
+            console.log("DELETE", res)
+            this.setState({
+                deletedItem: res.data
+            })
+        })
+    }
+    editItem(id){
+        axios.put(`http://localhost:8080/api/editItem/${id}`, { item_name: this.state.itemName, item_price: this.state.itemPrice })
+        .then(res => {
+            itemEdited: true
+        })
+        
+    }
+
+    searchItems(){
+        axios.get(`http://localhost:8080/api/search?name=${this.state.itemName}`)
+        
+        .then(res => {
+            this.setState({
+                found: res.data
+            })
+            // console.log(res.data, "search")
+        }) 
+    }
+
+    render() {
+        console.log("STATE", this.state)
+
        
-       .then( res => ({
-           
-           itemCreated: true
-       })
-       )}
+        return (
+            <div>
+                <input type="text" onChange={(e) => this.handleChange1(e.target.value)} />
+                <input type='text' onChange={(e) => this.handleChange2(e.target.value)} />
+                <button onClick={this.handleClick}>Create Item</button>    
+                <button onClick={this.showAllItems}>Show ALL Item</button>  
+                <button onClick={this.searchItems}>Search</button>  
 
-  render() {
-    return (
-      <div>
-        <input type="text" onChange={this.state.handleChange1}/>
-        <input type='text' onChange={this.state.handleChange2}/>
-        <button onClick={this.handleClick}>Create Item</button>
-      </div>
-    )
-  }
+
+                 {this.state.allItems.map((item, i) => {
+            return (
+                <div key={i}>
+                    <p>NAME: {item.item_name}</p>
+                    <p>PRICE: {item.item_price}</p>
+                    <button onClick={() => {this.deleteItem(item.id)}}>X</button>
+                    <button onClick={() => {this.editItem()}}>Edit item</button>
+
+                </div>
+            )
+        })}
+        {this.state.found.map((item, i) => {
+            return <div key={i}>
+                {item.item_name}
+                {item.item_price}
+            </div>
+
+        })}
+            </div>
+        )
+    }
 }
