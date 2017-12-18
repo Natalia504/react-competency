@@ -1,51 +1,57 @@
 import React, { Component } from 'react'
-import axios from 'axios';
-import Header from './Header';
+import { connect } from 'react-redux'
+import { getAll } from './../redux/reducer'
+import ComponentC from './ComponentC'
 import { Link } from 'react-router-dom';
 
 
 
-// COMP 36C 36D 36E 36F 36G 36H 36I 36J 37 42H 42E 
-export default class ComponentB extends Component {
-    constructor(){
-        super();
+ class ComponentB extends Component {
+     constructor(){
+         super()
+         this.state = {
+             greeting : "Hello, All!"
+         }
+         this.handleClick = this.handleClick.bind(this)
+     }
 
-        this.state = {
-            allHeroes: []
-        }
-    }
+// COMP 36J 37C
+     handleClick(){
+        this.setState({
+          greeting: "Goodbye"
+        })
+      }
 
-    componentDidMount(){
-        axios.get('https://swapi.co/api/people')
-            .then(res => {
-                // console.log(res)
-                this.setState({
-                    allHeroes: res.data.results
-                })
-            })
-    }
+// COMP 38C 38D
 
+componentDidMount(){
+ this.props.getAll();
+}
 
   render() {
-      console.log(this.state.allHeroes)
-    let heroes = this.state.allHeroes.map((item, i) => {
-        return (
-            <div key={i}>
-                 
-               <p> NAME:{item.name}</p>
-               <p> HAIR COLOR: {item.hair_color}</p>
-            </div>
-        )
-    })
-    return (
-    <div>
-        <Header/>
-        {heroes}
-        <Link to='/ComponentB'><button>Planets</button></Link>
-    </div>
+      let planet = this.props.allPlanets.map((item, i) => {
+          return(
+              <div key={i}>
+                  {item.name}
+              </div>
+          )
+      })
       
+    return (
+      <div>
+          <h1>PLANETS</h1>
+        {planet}
+        <ComponentC greeting1={this.state.greeting} greeting2={"Goodbye"}/>
+        <button onClick = {this.handleClick}>Click me</button>
+        <Link to='/componentD'><button>Next Component</button></Link>
+      </div>
     )
   }
 }
 
-
+function mapStateToProps(state){
+    return {
+        allPlanets: state.allPlanets
+    }
+}
+export default connect (mapStateToProps, {getAll})(ComponentB)
